@@ -60,8 +60,9 @@ namespace GGSThealthMonitor
 		private readonly DispatcherTimer _punishmentTimer;
 		/// <summary>
 		/// 每次惩罚持续的秒数
+		/// 目前定为2秒
 		/// </summary>
-		private int punishmentDurationSeconds = 3;
+		private int punishmentDurationSeconds = 2;
 
 		/// <summary>
 		/// 惩罚的倍数
