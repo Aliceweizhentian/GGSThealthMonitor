@@ -332,7 +332,7 @@ public:
         : processHandle(processHandle),
           netFightPlaceAddress(netFightPlaceAddress),
           localFightPlaceAddress(localFightPlaceAddress),
-          currentPlayerPosition(0) {}
+          currentPositions{0, 0} {}
 
     void start(int intervalMs = 500)
     {
@@ -381,7 +381,12 @@ private:
             }
             catch (const MemoryReaderException &e)
             {
-                currentPlayerPosition = 0;
+                //默认1p
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    currentPositions.netPosition = 1;
+                    currentPositions.localPosition = 1;
+                }
                 // std::wcerr << L"[Position Detector] Error: " << e.what() << std::endl;
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
