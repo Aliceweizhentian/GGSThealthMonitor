@@ -49,6 +49,7 @@ namespace GGSThealthMonitor
 		[DllImport(DllPath, CallingConvention = CallingConvention.Cdecl)]
 		public static extern int GetPlayerHealth(int playerId);
 	}
+	
 
 	public partial class GGSThealthMonitorPage : UserControl, IDisposable
 	{
@@ -76,6 +77,27 @@ namespace GGSThealthMonitor
 		/// 基础强度
 		/// </summary>
 		private int baseStrength = 20;
+		/// <summary>
+		/// 当前惩罚状态下的强度值
+		/// </summary>
+		private int _currentPunishmentIntensity = 0;
+
+		/// <summary>
+		/// 连段累加
+		/// 当连读触发时，如果当前受到的伤害小于上次惩罚的伤害
+		/// 那么继续沿用上次惩罚的伤害并加上一个comeboPunish
+		/// </summary>
+		private int comebopunish = 0;
+
+		/// <summary>
+		/// 不区分1/2P，谁掉血都惩罚
+		/// </summary>
+		private int Allpunish = 0;
+
+		/// <summary>
+		/// 是否为网战
+		/// </summary>
+		private int isNetfight = 0;
 
 		/// <summary>
 		/// 保证委托在C++调用期间不会被垃圾回收。
@@ -89,7 +111,7 @@ namespace GGSThealthMonitor
 			SetupDllDirectory();
 			InitializeComponent();
 		}
-		
+
 
 		public void Dispose()
 		{
@@ -110,7 +132,7 @@ namespace GGSThealthMonitor
 			{
 				// 1. 获取当前正在执行的DLL的完整路径
 				string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
-		
+
 
 				// 2. 获取该DLL所在的目录
 				string modulesDirectory = Path.GetDirectoryName(currentAssemblyPath);
@@ -282,6 +304,9 @@ namespace GGSThealthMonitor
 
 			_punishmentTimer.Stop();
 			_ = DGLab.SetStrength.Set(baseStrength);
+
+			_currentPunishmentIntensity = 0;
+			
 			DebugHub.Log("罪恶装备", "已停止监听，强度已恢复至基础值。");
 
 
@@ -302,7 +327,9 @@ namespace GGSThealthMonitor
 			if ((playerId == 1 && isMyPlayer1P) || (playerId == 2 && !isMyPlayer1P))
 			{
 				int damage = oldHealth - newHealth;
-				if (damage > 0)
+
+				//因为防御下会磨血，因此先简单的把10血以下的认为是在磨血，不处理
+				if (damage > 10)
 				{
 					int shockIntensity = (int)(damage * mutible);
 					shockIntensity = Math.Min(shockIntensity, limit);
@@ -311,15 +338,23 @@ namespace GGSThealthMonitor
 					{
 						_punishmentTimer.Stop();
 
-						if (shockIntensity > 0)
+						if (shockIntensity > _currentPunishmentIntensity)
 						{
 							_ = DGLab.SetStrength.Set(shockIntensity);
+							_currentPunishmentIntensity = shockIntensity;
+
+							txtCurrentPercent.Text = $"玩家 {playerId} 受到 {damage} 点伤害，输出 {shockIntensity} 强度";
+						}
+						else
+						{
+							// 新的伤害强度不足以覆盖当前惩罚，但我们仍然重置计时器，加上一个惩罚值
+							_ = DGLab.SetStrength.Set(shockIntensity + comebopunish);
+							txtCurrentPercent.Text = $"忽略了 {damage} 点伤害，当前惩罚 {_currentPunishmentIntensity} 继续";
 						}
 
 						_punishmentTimer.Start();
 
-						DebugHub.Log("罪恶装备", $"玩家 {playerId} 减少了 {damage} 点生命，施加了 {shockIntensity} 强度的惩罚。");
-						txtCurrentPercent.Text = $"玩家 {playerId} 受到 {damage} 点伤害，输出 {shockIntensity} 强度";
+
 					});
 				}
 			}
@@ -334,6 +369,9 @@ namespace GGSThealthMonitor
 
 			// 2. 将强度恢复到基础值
 			_ = DGLab.SetStrength.Set(baseStrength);
+
+			// 当惩罚时间结束时，重置当前惩罚强度记录
+			_currentPunishmentIntensity = 0;
 		}
 
 		#endregion
