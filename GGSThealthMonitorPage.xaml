@@ -227,6 +227,33 @@
 					</Button>
 				</Grid>
 
+				<!-- 连段惩罚 -->
+				<Grid Style="{StaticResource SettingRowGridStyle}">
+					<TextBlock Text="ComboPunish"
+							Style="{StaticResource SettingRowTextStyle}"
+							Grid.Column="0"/>
+					<Button Grid.Column="1"
+							Click="SetComboPunish_Click"
+							Style="{StaticResource FlatButtonStyle}"
+							Height="32"
+							HorizontalAlignment="Right">
+						<StackPanel Orientation="Horizontal"
+								HorizontalAlignment="Right">
+							<TextBlock x:Name="txtComboPunish"
+									Text="1"
+									Style="{StaticResource SettingRowTextStyle}"
+									FontSize="12"
+									VerticalAlignment="Center"
+									Margin="10,0,5,0"/>
+							<Image Source="/DGLabGameController;component/Assets/Next.png"
+									Width="14"
+									Height="14"
+									VerticalAlignment="Center"/>
+						</StackPanel>
+					</Button>
+				</Grid>
+
+
 				<!-- 不分敌我模式开关 -->
 				<Grid Style="{StaticResource SettingRowGridStyle}">
 					<TextBlock Text="不分敌我"

@@ -279,6 +279,28 @@ namespace GGSThealthMonitor
 			(data) => data.Close()).ShowDialog();
 		}
 		/// <summary>
+		/// 连段惩罚设置点击事件
+		/// </summary>
+		public void SetComboPunish_Click(object sender, RoutedEventArgs e)
+		{
+			new InputDialog("连段惩罚", "连段时的惩罚值", txtComboPunish.Text, "设定", "取消",
+			(data) =>
+			{
+				if (!string.IsNullOrWhiteSpace(data.InputText))
+				{
+					if (int.TryParse(data.InputText, out int value) && value >= 0)
+					{
+						txtComboPunish.Text = data.InputText;
+						combopunish = value;
+					}
+				}
+				else DebugHub.Warning("罪恶装备", "请输入一个有效的值");
+				data.Close();
+			},
+			(data) => data.Close()).ShowDialog();
+		}
+
+		/// <summary>
 		/// 修改惩罚计时器时长点击事件
 		/// </summary>
 		public void SetpunishTimer_Click(object sender, RoutedEventArgs e)
@@ -288,7 +310,7 @@ namespace GGSThealthMonitor
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
 				{
-					if (double.TryParse(data.InputText, out double value) && value > 0 )
+					if (double.TryParse(data.InputText, out double value) && value > 0)
 					{
 						punishmentDurationSeconds = value;
 
@@ -429,8 +451,13 @@ namespace GGSThealthMonitor
 						else
 						{
 							// 新的伤害强度不足以覆盖当前惩罚，但我们仍然重置计时器，加上一个惩罚值
-							_ = DGLab.SetStrength.Set(shockIntensity + combopunish);
-							txtCurrentPercent.Text = $"忽略了 {damage} 点伤害，当前惩罚 {_currentPunishmentIntensity} 继续";
+							int comboShockIntensity = shockIntensity + combopunish;
+							comboShockIntensity = Math.Min(comboShockIntensity, limit); // 确保连段惩罚也不超过上限
+
+							_ = DGLab.SetStrength.Set(comboShockIntensity);
+
+							// 更新当前的惩罚强度记录
+							_currentPunishmentIntensity = comboShockIntensity;
 						}
 
 						_punishmentTimer.Start();
