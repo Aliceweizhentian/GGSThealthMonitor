@@ -1,3 +1,6 @@
 #构建目录
 bin/
 obj/
+
+#vscode
+MemoryMonitor/.vscode
