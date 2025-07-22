@@ -63,7 +63,7 @@ namespace GGSThealthMonitor
 		/// 每次惩罚持续的秒数
 		/// 目前定为2秒
 		/// </summary>
-		private int punishmentDurationSeconds = 2;
+		private double punishmentDurationSeconds = 2.0;
 
 		/// <summary>
 		/// 惩罚的倍数
@@ -242,16 +242,16 @@ namespace GGSThealthMonitor
 		/// </summary>
 		public void SetpunishTimer_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("惩罚时长", "受到伤害之后的惩罚持续时间", txtPunishmentDuration.Text, "设定", "取消",
+			new InputDialog("惩罚时长", "受到伤害之后的惩罚持续时间,单位为秒,支持小数", txtPunishmentDuration.Text, "设定", "取消",
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
 				{
-					if (int.TryParse(data.InputText, out int value) && value > 0 )
+					if (double.TryParse(data.InputText, out double value) && value > 0 )
 					{
 						punishmentDurationSeconds = value;
 
-						txtPunishmentDuration.Text = value.ToString();
+						txtPunishmentDuration.Text = value.ToString("F1");
 
 						if (isMonitoring)
 						{
