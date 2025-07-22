@@ -229,7 +229,7 @@
 
 				<!-- 连段惩罚 -->
 				<Grid Style="{StaticResource SettingRowGridStyle}">
-					<TextBlock Text="ComboPunish"
+					<TextBlock Text="连段惩罚"
 							Style="{StaticResource SettingRowTextStyle}"
 							Grid.Column="0"/>
 					<Button Grid.Column="1"
