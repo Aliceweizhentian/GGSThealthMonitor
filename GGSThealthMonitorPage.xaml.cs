@@ -10,10 +10,15 @@ using System.Reflection;
 
 namespace GGSThealthMonitor
 {
+	[StructLayout(LayoutKind.Sequential)]
+	public struct PlayerPositions
+	{
+		public int NetPosition;
+		public int LocalPosition;
+	}
 	public static class MemoryMonitor
 	{
 		private const string DllPath = "MemoryMonitor.dll";
-
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate void HealthChangedCallback(int playerId, int newHealth, int oldHealth);
@@ -29,10 +34,10 @@ namespace GGSThealthMonitor
 			string moduleName,
 			ulong baseOffset1P,
 			ulong[] offsets1P,
-			int offsetsCount1P, 
+			int offsetsCount1P,
 			ulong baseOffset2P,
 			ulong[] offsets2P,
-			int offsetsCount2P, 
+			int offsetsCount2P,
 			ulong netFightPlaceOffset,
 			ulong localFightPlaceOffset,
 			HealthChangedCallback callback);
@@ -44,7 +49,7 @@ namespace GGSThealthMonitor
 		public static extern void StopMonitoring();
 
 		[DllImport(DllPath, CallingConvention = CallingConvention.Cdecl)]
-		public static extern int GetCurrentPlayerPosition();
+		public static extern PlayerPositions GetPlayerPositions();
 
 		[DllImport(DllPath, CallingConvention = CallingConvention.Cdecl)]
 		public static extern int GetPlayerHealth(int playerId);
@@ -95,9 +100,9 @@ namespace GGSThealthMonitor
 		private bool punishAllPlayers = false; 
 
 		/// <summary>
-		/// 是否为网战
+		/// 是否为本地对战
 		/// </summary>
-		private int isNetfight = 0;
+		private bool isLocalFight = false;
 
 		/// <summary>
 		/// 保证委托在C++调用期间不会被垃圾回收。
@@ -213,6 +218,24 @@ namespace GGSThealthMonitor
 				data.Close();
 			},
 			(data) => data.Close()).ShowDialog();
+		}
+
+		/// <summary>
+		/// 本地对战开关
+		/// </summary>
+		private void LocalFightToggle_Click(object sender, RoutedEventArgs e)
+		{
+			// ToggleButton的IsChecked是bool?（可空类型），我们将其转换为bool
+			isLocalFight = LocalFightToggle.IsChecked ?? false;
+
+			if (isLocalFight)
+			{
+				DebugHub.Log("罪恶装备", "已开启【本地对战】模式。");
+			}
+			else
+			{
+				DebugHub.Log("罪恶装备", "已关闭【本地对战】模式。");
+			}
 		}
 
 		/// <summary>
@@ -367,7 +390,18 @@ namespace GGSThealthMonitor
 		/// </summary>
 		private void OnHealthChanged(int playerId, int newHealth, int oldHealth)
 		{
-			int myPlayerPosition = MemoryMonitor.GetCurrentPlayerPosition();
+			// 1. 调用新函数获取包含两个位置的结构体
+			PlayerPositions positions = MemoryMonitor.GetPlayerPositions();
+
+			int myPlayerPosition = 0;
+			if (isLocalFight)
+			{
+				myPlayerPosition = positions.LocalPosition;
+			}
+			else
+			{
+				myPlayerPosition = positions.NetPosition;
+			}
 			bool isMyPlayer1P = myPlayerPosition % 2 == 1;
 
 

@@ -25,6 +25,13 @@ class HealthMonitorController;
 #define MEMORYMONITOR_API
 #endif
 
+// 【新增】定义一个结构体，用于封装1P/2P的两种位置信息
+struct PlayerPositions
+{
+    int netPosition;
+    int localPosition;
+};
+
 // 定义回调类型，C# 将实现这个回调
 typedef void(__stdcall *HealthChangedCallback)(int playerId, int newHealth, int oldHealth);
 
@@ -348,9 +355,10 @@ public:
         }
     }
 
-    int getPlayerPosition() const
+    PlayerPositions getPlayerPositions() const
     {
-        return currentPlayerPosition;
+        std::lock_guard<std::mutex> lock(mtx);
+        return currentPositions;
     }
 
 private:
@@ -361,16 +369,12 @@ private:
             try
             {
                 int netPosition = processHandle.readMemory<int>(netFightPlaceAddress);
-                int detectedPosition = 0;
+                int localPosition = processHandle.readMemory<int>(localFightPlaceAddress);
 
-                if (netPosition != 0)
-                {
-                    detectedPosition = netPosition;
-                }
-                
                 {
                     std::lock_guard<std::mutex> lock(mtx);
-                    currentPlayerPosition = detectedPosition;
+                    currentPositions.netPosition = netPosition;
+                    currentPositions.localPosition = localPosition;
                 }
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
@@ -389,7 +393,7 @@ private:
     uintptr_t localFightPlaceAddress;
 
     std::atomic<bool> running{false};
-    std::atomic<int> currentPlayerPosition;
+    PlayerPositions currentPositions;
     mutable std::mutex mtx;
     std::thread detectorThread;
 };
@@ -457,9 +461,10 @@ public:
         stop();
     }
 
-    int getPlayerPosition() const
+    // 【修改】方法名和返回值类型，以匹配底层调用
+    PlayerPositions getPlayerPositions() const
     {
-        return playerPositionDetector.getPlayerPosition();
+        return playerPositionDetector.getPlayerPositions();
     }
 
     int getPlayerHealth(int playerId) const
@@ -584,14 +589,15 @@ extern "C" MEMORYMONITOR_API void StopMonitoring()
     }
 }
 
-// 获取当前玩家位置
-extern "C" MEMORYMONITOR_API int GetCurrentPlayerPosition()
+// 【新增】导出函数，返回包含两个位置的结构体
+extern "C" MEMORYMONITOR_API PlayerPositions GetPlayerPositions()
 {
     if (g_monitorController)
     {
-        return g_monitorController->getPlayerPosition();
+        return g_monitorController->getPlayerPositions();
     }
-    return 0; // 0 表示不在比赛中
+    // 如果控制器无效，返回一个清零的结构体
+    return {0, 0};
 }
 
 // 获取玩家血量

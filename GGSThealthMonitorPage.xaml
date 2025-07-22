@@ -240,6 +240,20 @@
 							HorizontalAlignment="Right"/>
 				</Grid>
 
+
+				<!-- 本地对战开关 -->
+				<Grid Style="{StaticResource SettingRowGridStyle}">
+					<TextBlock Text="本地对战开关"
+							   Style="{StaticResource SettingRowTextStyle}"
+							   Grid.Column="0"
+							   ToolTip="如果是本地游戏请打开这个开关，网战就保持关闭这个开关"/>
+					<ToggleButton x:Name="LocalFightToggle"
+								  Grid.Column="1"
+								  Click="LocalFightToggle_Click"
+								  Style="{StaticResource SwitchToggleButton}"
+								  HorizontalAlignment="Right"/>
+				</Grid>
+
 			</StackPanel>
 		</Border>
 
