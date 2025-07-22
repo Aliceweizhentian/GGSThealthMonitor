@@ -237,6 +237,35 @@ namespace GGSThealthMonitor
 			},
 			(data) => data.Close()).ShowDialog();
 		}
+		/// <summary>
+		/// 修改惩罚计时器时长点击事件
+		/// </summary>
+		public void SetpunishTimer_Click(object sender, RoutedEventArgs e)
+		{
+			new InputDialog("惩罚时长", "受到伤害之后的惩罚持续时间", txtPunishmentDuration.Text, "设定", "取消",
+			(data) =>
+			{
+				if (!string.IsNullOrWhiteSpace(data.InputText))
+				{
+					if (int.TryParse(data.InputText, out int value) && value > 0 )
+					{
+						punishmentDurationSeconds = value;
+
+						txtPunishmentDuration.Text = value.ToString();
+
+						if (isMonitoring)
+						{
+							_punishmentTimer.Interval = TimeSpan.FromSeconds(punishmentDurationSeconds);
+							DebugHub.Log("罪恶装备", $"惩罚时长已实时更新为 {punishmentDurationSeconds} 秒。");
+						}
+					}
+
+				}
+				else DebugHub.Warning("罪恶装备", "请输入一个有效的值");
+				data.Close();
+			},
+			(data) => data.Close()).ShowDialog();
+		}
 
 		/// <summary>
 		/// 开始监控按钮点击事件
