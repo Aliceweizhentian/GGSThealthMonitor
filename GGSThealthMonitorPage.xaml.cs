@@ -90,9 +90,9 @@ namespace GGSThealthMonitor
 		private int comebopunish = 0;
 
 		/// <summary>
-		/// 不区分1/2P，谁掉血都惩罚
+		/// 不分敌我模式开关，谁掉血都要电
 		/// </summary>
-		private int Allpunish = 0;
+		private bool punishAllPlayers = false; 
 
 		/// <summary>
 		/// 是否为网战
@@ -213,6 +213,24 @@ namespace GGSThealthMonitor
 				data.Close();
 			},
 			(data) => data.Close()).ShowDialog();
+		}
+
+		/// <summary>
+		/// “不分敌我”模式开关点击事件
+		/// </summary>
+		private void AllPunishToggle_Click(object sender, RoutedEventArgs e)
+		{
+			// ToggleButton的IsChecked是bool?（可空类型），我们将其转换为bool
+			punishAllPlayers = AllPunishToggle.IsChecked ?? false;
+
+			if (punishAllPlayers)
+			{
+				DebugHub.Log("罪恶装备", "已开启【不分敌我】模式。");
+			}
+			else
+			{
+				DebugHub.Log("罪恶装备", "已关闭【不分敌我】模式。");
+			}
 		}
 
 		/// <summary>
@@ -353,7 +371,7 @@ namespace GGSThealthMonitor
 			bool isMyPlayer1P = myPlayerPosition % 2 == 1;
 
 
-			if ((playerId == 1 && isMyPlayer1P) || (playerId == 2 && !isMyPlayer1P))
+			if (punishAllPlayers || ((playerId == 1 && isMyPlayer1P) || (playerId == 2 && !isMyPlayer1P)))
 			{
 				int damage = oldHealth - newHealth;
 
