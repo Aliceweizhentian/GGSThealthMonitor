@@ -90,9 +90,9 @@ namespace GGSThealthMonitor
 		/// <summary>
 		/// 连段累加
 		/// 当连读触发时，如果当前受到的伤害小于上次惩罚的伤害
-		/// 那么继续沿用上次惩罚的伤害并加上一个comeboPunish
+		/// 那么继续沿用上次惩罚的伤害并加上一个comboPunish
 		/// </summary>
-		private int comebopunish = 0;
+		private int combopunish = 0;
 
 		/// <summary>
 		/// 不分敌我模式开关，谁掉血都要电
@@ -429,7 +429,7 @@ namespace GGSThealthMonitor
 						else
 						{
 							// 新的伤害强度不足以覆盖当前惩罚，但我们仍然重置计时器，加上一个惩罚值
-							_ = DGLab.SetStrength.Set(shockIntensity + comebopunish);
+							_ = DGLab.SetStrength.Set(shockIntensity + combopunish);
 							txtCurrentPercent.Text = $"忽略了 {damage} 点伤害，当前惩罚 {_currentPunishmentIntensity} 继续";
 						}
 
