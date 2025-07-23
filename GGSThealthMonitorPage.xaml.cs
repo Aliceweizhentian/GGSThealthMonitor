@@ -55,11 +55,12 @@ namespace GGSThealthMonitor
 		public static extern int GetPlayerHealth(int playerId);
 	}
 	
-
 	public partial class GGSThealthMonitorPage : UserControl, IDisposable
 	{
-
-		// 定时器和惩罚持续时间设置
+		/// <summary>
+		/// 模块目录
+		/// </summary>
+		private string moduleFolderPath;
 		/// <summary>
 		/// 用于在惩罚结束后恢复基础强度的定时器
 		/// </summary>
@@ -92,7 +93,7 @@ namespace GGSThealthMonitor
 		/// 当连读触发时，如果当前受到的伤害小于上次惩罚的伤害
 		/// 那么继续沿用上次惩罚的伤害并加上一个comboPunish
 		/// </summary>
-		private int combopunish = 0;
+		private int combopunish = 1;
 
 		/// <summary>
 		/// 不分敌我模式开关，谁掉血都要电
@@ -110,10 +111,11 @@ namespace GGSThealthMonitor
 		private static MemoryMonitor.HealthChangedCallback _callbackDelegate;
 		private bool isMonitoring = false;
 
-		public GGSThealthMonitorPage()
+		public GGSThealthMonitorPage(string moduleId)
 		{
+			moduleFolderPath = Path.Combine(ConfigManager.ModulesPath, moduleId);
 			_punishmentTimer = new DispatcherTimer();
-			SetupDllDirectory();
+			SetupDllDirectory(moduleFolderPath);
 			InitializeComponent();
 		}
 
@@ -131,22 +133,21 @@ namespace GGSThealthMonitor
 		/// <summary>
 		/// 计算 MemoryMonitor.dll 的路径并添加到搜索路径中
 		/// </summary>
-		private void SetupDllDirectory()
+		private void SetupDllDirectory(string targetDllDirectory)
 		{
 			try
 			{
-				// 1. 获取当前正在执行的DLL的完整路径
-				string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
+				//废弃
+				// // 1. 获取当前正在执行的DLL的完整路径
+				// string currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
+				// // 2. 获取该DLL所在的目录
+				// string modulesDirectory = Path.GetDirectoryName(currentAssemblyPath);
+				// // 3. 构造目标DLL所在文件夹的绝对路径 (上一层 -> GGSTmemoryReader)
+				// string targetDllDirectory = Path.GetFullPath(Path.Combine(modulesDirectory, @"..\GGSTmemoryReader"));
 
 
-				// 2. 获取该DLL所在的目录
-				string modulesDirectory = Path.GetDirectoryName(currentAssemblyPath);
 
-				// 3. 构造目标DLL所在文件夹的绝对路径 (上一层 -> GGSTmemoryReader)
-				string targetDllDirectory = Path.GetFullPath(Path.Combine(modulesDirectory, @"..\GGSTmemoryReader"));
-
-
-				// 4. 将这个目录设置为DLL的搜索路径
+				//  将这个目录设置为DLL的搜索路径
 				bool success = MemoryMonitor.SetDllDirectory(targetDllDirectory);
 
 				if (!success)
@@ -451,10 +452,11 @@ namespace GGSThealthMonitor
 						else
 						{
 							// 新的伤害强度不足以覆盖当前惩罚，但我们仍然重置计时器，加上一个惩罚值
-							int comboShockIntensity = shockIntensity + combopunish;
+							int comboShockIntensity = _currentPunishmentIntensity + combopunish;
 							comboShockIntensity = Math.Min(comboShockIntensity, limit); // 确保连段惩罚也不超过上限
 
 							_ = DGLab.SetStrength.Set(comboShockIntensity);
+							txtCurrentPercent.Text = $"玩家 {playerId} 受到 {damage} 点伤害由于连段修正\n进行连段惩罚输出{comboShockIntensity} 强度";
 
 							// 更新当前的惩罚强度记录
 							_currentPunishmentIntensity = comboShockIntensity;
