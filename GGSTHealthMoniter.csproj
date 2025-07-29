@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\VisualStudio Home\DGLabGameController\DGLabGameController\DGLabGameController.csproj" />
+    <ProjectReference Include="..\DGLabGameController\DGLabGameController.csproj" />
   </ItemGroup>
 
 </Project>
