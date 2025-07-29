@@ -1,4 +1,4 @@
-﻿using DGLabGameController;
+﻿using DGLabGameController.Core.Module;
 using System.Windows.Controls;
 
 namespace GGSThealthMonitor
@@ -10,7 +10,7 @@ namespace GGSThealthMonitor
 		public override string Description => "实时检测玩家血条，玩家掉血触发惩罚"; // 模块描述
 		public override string Version => "V1.1.1"; // 模块版本
 		public override string Author => "Aliceweizhentian"; // 模块作者
-		public override int CompatibleApiVersion => 10086; // 兼容的API版本, 通常不会更改
+		public override int CompatibleApiVersion => 10087; // 兼容的API版本, 通常不会更改
 
 		protected override UserControl CreatePage()
 		{

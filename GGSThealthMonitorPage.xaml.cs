@@ -1,12 +1,12 @@
 ﻿using DGLabGameController;
-using lyqbing.DGLAB;
-using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using System.IO; 
-using System.Reflection; 
+using DGLabGameController.Core.Debug;
+using DGLabGameController.Core.DGLabApi;
+using DGLabGameController.Core.Config;
 
 namespace GGSThealthMonitor
 {
@@ -108,12 +108,12 @@ namespace GGSThealthMonitor
 		/// <summary>
 		/// 保证委托在C++调用期间不会被垃圾回收。
 		/// </summary>
-		private static MemoryMonitor.HealthChangedCallback _callbackDelegate;
+		private static MemoryMonitor.HealthChangedCallback ?_callbackDelegate;
 		private bool isMonitoring = false;
 
 		public GGSThealthMonitorPage(string moduleId)
 		{
-			moduleFolderPath = Path.Combine(ConfigManager.ModulesPath, moduleId);
+			moduleFolderPath = Path.Combine(AppConfig.ModulesPath, moduleId);
 			_punishmentTimer = new DispatcherTimer();
 			SetupDllDirectory(moduleFolderPath);
 			InitializeComponent();
@@ -179,7 +179,7 @@ namespace GGSThealthMonitor
 		/// </summary>
 		private void SetMutible_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("强度倍数", "输入一个数，角色减少的体力值乘以强度倍数即为受到的电击强度", txtMutible.Text, "设定", "取消",
+			new InputDialog("强度倍数", "输入一个数，角色减少的体力值乘以强度倍数即为受到的电击强度", txtMutible.Text, "设定", 
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
@@ -194,8 +194,7 @@ namespace GGSThealthMonitor
 				}
 				else DebugHub.Warning("罪恶装备", "请输入一个有效值");
 				data.Close();
-			},
-			(data) => data.Close()).ShowDialog();
+			}, "取消", (data) => data.Close()).ShowDialog();
 		}
 
 		/// <summary>
@@ -203,7 +202,7 @@ namespace GGSThealthMonitor
 		/// </summary>
 		public void SetLimit_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("强度上限", "输入一个上限值，受到的电击强度不会超过这个值", txtLimit.Text, "设定", "取消",
+			new InputDialog("强度上限", "输入一个上限值，受到的电击强度不会超过这个值", txtLimit.Text, "设定",
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
@@ -217,8 +216,7 @@ namespace GGSThealthMonitor
 				}
 				else DebugHub.Warning("罪恶装备", "请输入一个有效的容差值");
 				data.Close();
-			},
-			(data) => data.Close()).ShowDialog();
+			}, "取消",(data) => data.Close()).ShowDialog();
 		}
 
 		/// <summary>
@@ -262,7 +260,7 @@ namespace GGSThealthMonitor
 		/// </summary>
 		public void SetBaseStrength_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("基础强度", "什么也不做时的基础强度", txtBaseStrength.Text, "设定", "取消",
+			new InputDialog("基础强度", "什么也不做时的基础强度", txtBaseStrength.Text, "设定", 
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
@@ -276,15 +274,14 @@ namespace GGSThealthMonitor
 				}
 				else DebugHub.Warning("罪恶装备", "请输入一个有效的容差值");
 				data.Close();
-			},
-			(data) => data.Close()).ShowDialog();
+			}, "取消",(data) => data.Close()).ShowDialog();
 		}
 		/// <summary>
 		/// 连段惩罚设置点击事件
 		/// </summary>
 		public void SetComboPunish_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("连段惩罚", "连段时的惩罚值", txtComboPunish.Text, "设定", "取消",
+			new InputDialog("连段惩罚", "连段时的惩罚值", txtComboPunish.Text, "设定",
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
@@ -297,7 +294,7 @@ namespace GGSThealthMonitor
 				}
 				else DebugHub.Warning("罪恶装备", "请输入一个有效的值");
 				data.Close();
-			},
+			}, "取消",
 			(data) => data.Close()).ShowDialog();
 		}
 
@@ -306,7 +303,7 @@ namespace GGSThealthMonitor
 		/// </summary>
 		public void SetpunishTimer_Click(object sender, RoutedEventArgs e)
 		{
-			new InputDialog("惩罚时长", "受到伤害之后的惩罚持续时间,单位为秒,支持小数", txtPunishmentDuration.Text, "设定", "取消",
+			new InputDialog("惩罚时长", "受到伤害之后的惩罚持续时间,单位为秒,支持小数", txtPunishmentDuration.Text, "设定",
 			(data) =>
 			{
 				if (!string.IsNullOrWhiteSpace(data.InputText))
@@ -327,8 +324,7 @@ namespace GGSThealthMonitor
 				}
 				else DebugHub.Warning("罪恶装备", "请输入一个有效的值");
 				data.Close();
-			},
-			(data) => data.Close()).ShowDialog();
+			}, "取消",(data) => data.Close()).ShowDialog();
 		}
 
 		/// <summary>
