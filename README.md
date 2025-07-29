@@ -35,6 +35,8 @@
 
 **v1.1.1：** 兼容DG-Lab-Game-Controller的v3.3
 
+**v1.1.2：** 兼容DG-Lab-Game-Controller的v3.5
+
 
 
 
